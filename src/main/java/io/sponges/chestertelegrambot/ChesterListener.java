@@ -3,6 +3,7 @@ package io.sponges.chestertelegrambot;
 import org.json.JSONObject;
 import pro.zackpollard.telegrambot.api.chat.Chat;
 import pro.zackpollard.telegrambot.api.chat.GroupChat;
+import pro.zackpollard.telegrambot.api.chat.message.send.SendableTextMessage;
 import pro.zackpollard.telegrambot.api.event.Listener;
 import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
@@ -31,9 +32,10 @@ public class ChesterListener implements Listener {
     public void onTextMessageReceived(TextMessageReceivedEvent event) {
         String message = event.getContent().getContent();
         Chat chat = event.getChat();
+        boolean groupchat = chat instanceof GroupChat;
         if (message.startsWith(Chester.BOT_USERNAME)) {
             message = message.replace(Chester.BOT_USERNAME, "");
-        } else if (chat instanceof GroupChat && !respondToAllMessages.contains(chat.getId())) { //SuperGroupChat extends GroupChat
+        } else if (groupchat && !respondToAllMessages.contains(chat.getId())) { //SuperGroupChat extends GroupChat
             return;
         }
 
@@ -42,7 +44,13 @@ public class ChesterListener implements Listener {
             chat.sendMessage("Something went wrong :(");
             return;
         }
-        chat.sendMessage(response);
+        SendableTextMessage.SendableTextMessageBuilder builder = SendableTextMessage.builder();
+        if (groupchat) {
+            builder.replyTo(event.getMessage()).message(response);
+        } else {
+            builder.message(response);
+        }
+        chat.sendMessage(builder.build());
     }
 
     @Override
