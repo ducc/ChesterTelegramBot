@@ -3,6 +3,7 @@ package io.sponges.chestertelegrambot;
 import org.json.JSONObject;
 import pro.zackpollard.telegrambot.api.chat.Chat;
 import pro.zackpollard.telegrambot.api.chat.GroupChat;
+import pro.zackpollard.telegrambot.api.chat.message.send.SendableTextMessage;
 import pro.zackpollard.telegrambot.api.event.Listener;
 import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
@@ -42,7 +43,11 @@ public class ChesterListener implements Listener {
             chat.sendMessage("Something went wrong :(");
             return;
         }
-        chat.sendMessage(response);
+        SendableTextMessage send = SendableTextMessage.builder()
+                .message(response)
+                .replyTo(event.getMessage())
+                .build();
+        chat.sendMessage(send);
     }
 
     @Override
