@@ -1,10 +1,14 @@
 package io.sponges.chestertelegrambot;
 
 import org.json.JSONObject;
+import pro.zackpollard.telegrambot.api.chat.Chat;
 import pro.zackpollard.telegrambot.api.chat.ChatType;
+import pro.zackpollard.telegrambot.api.chat.GroupChat;
+import pro.zackpollard.telegrambot.api.chat.SuperGroupChat;
 import pro.zackpollard.telegrambot.api.chat.message.content.ContentType;
 import pro.zackpollard.telegrambot.api.chat.message.content.TextContent;
 import pro.zackpollard.telegrambot.api.event.Listener;
+import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
 
 import java.io.BufferedReader;
@@ -13,26 +17,41 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChesterListener implements Listener {
+    private Map<Chat, Boolean> respondToAllMessages = new HashMap<>();
 
     @Override
     public void onTextMessageReceived(TextMessageReceivedEvent event) {
-        if (event.getContent().getType() != ContentType.TEXT) return;
-        TextContent content = event.getContent();
-        String message = content.getContent();
-        ChatType type = event.getChat().getType();
-        if (type == ChatType.GROUP || type == ChatType.SUPERGROUP) {
-            if (!message.startsWith(Chester.BOT_USERNAME)) return;
-            message = message.substring(message.indexOf("@chester") + 16);
+        String message = event.getContent().getContent();
+        Chat chat = event.getChat();
+        if (message.startsWith(Chester.BOT_USERNAME)) {
+            message = message.replace(Chester.BOT_USERNAME, "");
+        } else if (chat instanceof GroupChat && !respondToAllMessages.get(chat)) { //SuperGroupChat extends GroupChat
+            return;
         }
-        System.out.println("got msg " + message);
-        String response = askChester(message);
+
+        String response = this.askChester(message);
         if (response == null) {
-            event.getChat().sendMessage("Something went wrong :'(");
+            event.getChat().sendMessage("Something went wrong :(");
         }
-        System.out.println("got response " + response);
         event.getChat().sendMessage(response);
+    }
+
+    //HOW NOT TO COMMAND HANDLER
+    @Override
+    public void onCommandMessageReceived(CommandMessageReceivedEvent event) {
+        if (event.getCommand().equalsIgnoreCase("enable")) {
+            respondToAllMessages.put(event.getChat(), true);
+            event.getChat().sendMessage("Responding to all messages has been enabled!");
+        } else if (event.getCommand().equalsIgnoreCase("disable")) {
+            respondToAllMessages.put(event.getChat(), false);
+            event.getChat().sendMessage("Responding to all messages has been disabled!");
+        } else if (event.getCommand().equalsIgnoreCase("start")) {
+            event.getChat().sendMessage("Talk to me!");
+        }
     }
 
     private String askChester(String query) {
