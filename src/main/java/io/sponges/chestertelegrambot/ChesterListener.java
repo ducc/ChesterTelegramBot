@@ -81,6 +81,7 @@ public class ChesterListener implements Listener {
                 }
                 chat.sendMessage("okbyebye");
                 chester.setRunning(false);
+                System.exit(-1);
             }
         }
     }
