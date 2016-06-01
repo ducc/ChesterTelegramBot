@@ -19,7 +19,13 @@ public class Chester {
         if (this.bot == null) System.exit(-1);
         this.bot.getEventsManager().register(new ChesterListener());
         this.bot.startUpdates(false);
-        while (true);
+        while (true) {
+            try {
+                Thread.sleep(5000000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static void main(String[] args) {
