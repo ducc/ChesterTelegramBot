@@ -11,15 +11,17 @@ public class Chester {
 
     public static final String BOT_USERNAME = "@chesterchatbot";
     public static final String REQUEST_URL = "http://chester.chat/api?q=";
+    public static final long OWNER_ID = 118746988;
 
     private final TelegramBot bot;
+    private boolean running = true;
 
     private Chester() {
         this.bot = TelegramBot.login(getToken(new File("token.txt")));
         if (this.bot == null) System.exit(-1);
-        this.bot.getEventsManager().register(new ChesterListener());
+        this.bot.getEventsManager().register(new ChesterListener(this));
         this.bot.startUpdates(false);
-        while (true);
+        while (running);
     }
 
     public static void main(String[] args) {
@@ -35,4 +37,7 @@ public class Chester {
         return null;
     }
 
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
 }
